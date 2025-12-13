@@ -47,7 +47,7 @@ export const createOrder = async (userId, orderData) => {
     });
     return docRef.id;
 };
-
+// test
 export const checkUsernameAvailability = async (username) => {
   const usernameRef = doc(db, "usernames", username.toLowerCase());
   const snap = await getDoc(usernameRef);
