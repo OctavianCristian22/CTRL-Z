@@ -5,7 +5,6 @@ export default function ComingSoon() {
   const [text, setText] = useState('');
   const fullText = "ACCESS_RESTRICTED // SYSTEM_UPGRADE_IN_PROGRESS...";
 
-  // Efect simplu de scris la masina
   useEffect(() => {
     let i = 0;
     const typing = setInterval(() => {
@@ -18,13 +17,11 @@ export default function ComingSoon() {
 
   return (
     <div className="min-h-screen bg-black text-neon font-mono flex flex-col items-center justify-center p-4 relative overflow-hidden selection:bg-neon selection:text-black">
-      {/* Background Effects (Scanlines) */}
+
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-10 bg-[length:100%_2px,3px_100%]"></div>
       
-      {/* Container Principal */}
       <div className="z-20 w-full max-w-4xl text-center border-y-2 border-neon/30 py-12 md:py-20 bg-black/80 backdrop-blur-sm relative">
         
-        {/* Logo Mic */}
         <div className="flex justify-center mb-4">
             <div className="relative">
                 <div className="absolute inset-0 bg-neon blur-xl opacity-20"></div>
@@ -32,30 +29,23 @@ export default function ComingSoon() {
             </div>
         </div>
 
-        {/* --- AICI AM ADAUGAT NUMELE SITE-ULUI --- */}
         <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-8">
           CTRL <span className="text-neon">- Z</span>
         </h2>
-        {/* --------------------------------------- */}
-        
-        {/* Titlu Gigant */}
+
         <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white mb-2 relative inline-block opacity-50">
           COMING SOON
         </h1>
 
-        {/* Text animat (Typing) */}
         <div className="mt-8 text-sm md:text-lg font-bold text-neon/80 tracking-widest uppercase">
             {text}<span className="animate-pulse">_</span>
         </div>
 
-        {/* Iconita de lacat */}
         <div className="mt-12 flex justify-center opacity-50">
             <Lock size={24} className="animate-pulse" />
         </div>
 
       </div>
-      
-      {/* Footer cu Server Redacted ROSU */}
       <div className="absolute bottom-8 text-center z-20">
           <p className="text-gray-500 text-xs font-mono">
               SERVER: RO-<span className="text-red-600 font-black animate-pulse tracking-widest bg-black px-1">[REDACTED]</span>-01 <br/> 
