@@ -34,16 +34,12 @@ body {
 }
 
 body {
-  cursor: crosshair; /* Cursor general tip tinta */
+  cursor: crosshair;
 }
 
-/* Cand pui mouse-ul pe ceva clickabil */
 a, button, .cursor-pointer {
   cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewport="0 0 24 24" fill="none" stroke="%2339FF14" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="2"></circle></svg>') 12 12, pointer; 
-  /* ^ Asta e un cerc neon verde (SVG) */
 }
-
-/* --- ONE-SHOT IMPACT GLITCH --- */
 
 @keyframes impact-glitch-anim {
   0% {
@@ -70,19 +66,12 @@ a, button, .cursor-pointer {
     transform: translate(0, 2px) skew(2deg);
   }
   100% {
-    /* STABILIZARE: Se intoarce la normal si ramane asa */
     transform: translate(0, 0) skew(0deg) scale(1);
     filter: none;
     opacity: 1;
   }
 }
 
-/*
-   Aceasta clasa o punem pe elementul care vrem sa se distorsioneze.
-   Animatia se declanseaza cand parintele cu clasa '.group' primeste hover.
-*/
 .group:hover .trigger-glitch {
-  /* Nume animatie | Durata | Tip miscare | Cate ori ruleaza | Starea finala */
   animation: impact-glitch-anim 0.7s ease-out 1 forwards;
-  /* 'forwards' asigura ca ramane in starea de la 100% dupa ce termina */
 }

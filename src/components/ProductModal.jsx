@@ -1,25 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Plus, Minus, Star, Zap, Activity, MessageSquare, Trash2, Edit2, Save, XCircle } from 'lucide-react';
-import { addReview, getProductReviews, deleteReview, updateReview } from '../firebase'; // Importam functiile noi
+import { addReview, getProductReviews, deleteReview, updateReview } from '../firebase';
 import toast from 'react-hot-toast';
 
 export default function ProductModal({ product, isOpen, onClose, addToCart, user }) {
   const [qty, setQty] = useState(1);
   const [activeTab, setActiveTab] = useState('DESC'); 
   const [activeImage, setActiveImage] = useState(0);
-  
-  // Review States
+
   const [reviews, setReviews] = useState([]);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Edit Review States
-  const [editingId, setEditingId] = useState(null); // ID-ul review-ului pe care il editam
+  const [editingId, setEditingId] = useState(null);
   const [editComment, setEditComment] = useState("");
   const [editRating, setEditRating] = useState(5);
 
-  // --- INIT MODAL ---
 useEffect(() => {
       if (isOpen && product) {
           document.body.style.overflow = 'hidden';
@@ -28,10 +25,8 @@ useEffect(() => {
           setActiveImage(0);
           setQty(1);
 
-          // FIX: Golim review-urile vechi inainte sa incarcam altele noi
           setReviews([]); 
-          
-          // Incarcam review-urile pentru produsul curent
+
           getProductReviews(product.id)
             .then(data => setReviews(data))
             .catch(err => console.log("Eroare incarcare review-uri:", err));
@@ -49,7 +44,6 @@ useEffect(() => {
     onClose();
   };
 
-  // --- ADD REVIEW ---
   const handleSubmitReview = async (e) => {
       e.preventDefault();
       if (!user) { toast.error("Trebuie să fii logat."); return; }
@@ -65,24 +59,22 @@ useEffect(() => {
           };
           
           const newId = await addReview(product.id, reviewData);
-          setReviews([{ ...reviewData, id: newId }, ...reviews]); // Adaugam local cu ID
+          setReviews([{ ...reviewData, id: newId }, ...reviews]);
           setNewComment("");
           toast.success("Review publicat!");
       } catch (error) { toast.error("Eroare."); } 
       finally { setIsSubmitting(false); }
   };
 
-  // --- DELETE REVIEW ---
   const handleDelete = async (reviewId) => {
       if(!confirm("Sigur ștergi acest review?")) return;
       try {
           await deleteReview(reviewId);
-          setReviews(reviews.filter(r => r.id !== reviewId)); // Scoatem din lista locala
+          setReviews(reviews.filter(r => r.id !== reviewId));
           toast.success("Review șters.");
       } catch (e) { toast.error("Eroare la ștergere."); }
   };
 
-  // --- EDIT REVIEW ---
   const startEdit = (review) => {
       setEditingId(review.id);
       setEditComment(review.comment);
@@ -92,7 +84,6 @@ useEffect(() => {
   const saveEdit = async () => {
       try {
           await updateReview(editingId, editComment, editRating);
-          // Actualizam lista locala
           setReviews(reviews.map(r => r.id === editingId ? { ...r, comment: editComment, rating: editRating } : r));
           setEditingId(null);
           toast.success("Review modificat!");
@@ -107,7 +98,6 @@ useEffect(() => {
         
         <button onClick={onClose} className="absolute top-4 right-4 z-20 bg-black text-white p-2 hover:bg-error hover:rotate-90 transition-all"><X size={24} /></button>
 
-        {/* STANGA: Galerie */}
         <div className="w-full md:w-1/2 bg-gray-100 border-b-4 md:border-b-0 md:border-r-4 border-black flex flex-col">
             <div className="flex-1 flex items-center justify-center p-8 relative overflow-hidden group">
                 {product.gallery && product.gallery[activeImage] ? (<img src={product.gallery[activeImage]} alt={product.name} className="w-full h-full object-contain max-h-[400px] transition-transform duration-500 group-hover:scale-110" />) : (<div className="scale-150 text-gray-800">{product.icon}</div>)}
@@ -116,7 +106,6 @@ useEffect(() => {
             {product.gallery && (<div className="h-24 bg-white border-t-4 border-black flex overflow-x-auto">{product.gallery.map((img, idx) => (<div key={idx} onClick={() => setActiveImage(idx)} className={`w-24 h-full border-r-2 border-black cursor-pointer hover:opacity-100 transition-opacity flex items-center justify-center p-2 ${activeImage === idx ? 'opacity-100 bg-gray-200' : 'opacity-50'}`}><img src={img} className="w-full h-full object-cover" /></div>))}</div>)}
         </div>
 
-        {/* DREAPTA: Info */}
         <div className="w-full md:w-1/2 flex flex-col h-full overflow-y-auto bg-white">
             <div className="p-8 border-b-2 border-dashed border-gray-300">
                 <div className="flex items-center gap-2 mb-2"><span className="bg-neon text-black px-2 py-1 text-xs font-bold uppercase">{product.category}</span>{product.stock && <span className="bg-black text-white px-2 py-1 text-xs font-bold uppercase flex items-center gap-1"><Activity size={12}/> STOC: {product.stock}</span>}</div>
@@ -152,14 +141,12 @@ useEffect(() => {
                             <button disabled={isSubmitting} className="bg-black text-white px-4 py-1 font-bold text-sm hover:bg-neon hover:text-black transition-colors w-full border-2 border-black">{isSubmitting ? 'SENDING...' : 'PUBLISH REVIEW'}</button>
                         </form>
 
-                        {/* LISTA REVIEW-URI CU SCROLL */}
                         <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                             {reviews.length === 0 ? (
                                 <p className="text-gray-500 font-bold text-center italic">Fii primul care scrie un review.</p>
                             ) : (
                                 reviews.map((rev) => (
                                     <div key={rev.id} className="bg-white p-4 border border-black shadow-sm group relative">
-                                        {/* EDIT MODE */}
                                         {editingId === rev.id ? (
                                             <div className="animate-in fade-in">
                                                  <div className="flex gap-1 mb-2">
@@ -181,7 +168,6 @@ useEffect(() => {
                                                 </div>
                                                 <p className="text-sm text-gray-700 font-bold border-l-2 border-gray-300 pl-2">"{rev.comment}"</p>
                                                 
-                                                {/* BUTOANE EDIT/DELETE (Doar pentru autor) */}
                                                 {user && user.uid === rev.userId && (
                                                     <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button onClick={() => startEdit(rev)} className="text-gray-400 hover:text-black" title="Edit"><Edit2 size={14}/></button>

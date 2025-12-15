@@ -15,7 +15,6 @@ export default function ProductPage({ addToCart, user }) {
   const [qty, setQty] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
-  // State Review
   const [newReviewText, setNewReviewText] = useState('');
   const [newRating, setNewRating] = useState(5);
   const [editingId, setEditingId] = useState(null);
@@ -128,7 +127,6 @@ export default function ProductPage({ addToCart, user }) {
 
             <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0_0_rgba(0,0,0,1)]">
 <div className="flex gap-4 mb-4">
-    {/* Selector Cantitate (neschimbat) */}
     <div className="flex items-center border-2 border-black bg-gray-100">
         <button onClick={() => setQty(q => Math.max(1, q - 1))} className="px-4 py-2 hover:bg-black hover:text-white font-black text-xl">-</button>
         <span className="px-4 font-bold text-xl min-w-[50px] text-center">{qty}</span>
@@ -146,8 +144,6 @@ export default function ProductPage({ addToCart, user }) {
     </button>
                     </div>
             </div>
-
-            {/* --- SPECIFICATII DINAMICE --- */}
             {product.specs && product.specs.length > 0 ? (
                 <div className="mt-8 grid grid-cols-2 gap-4">
                     {product.specs.map((spec, index) => (
@@ -158,12 +154,11 @@ export default function ProductPage({ addToCart, user }) {
                     ))}
                 </div>
             ) : (
-                // Daca nu sunt specificatii, nu afisam nimic sau un mesaj
+
                 <div className="mt-8 text-xs text-gray-400 font-mono border-t border-dashed border-gray-300 pt-2">
                     NO_TECH_SPECS_AVAILABLE
                 </div>
             )}
-            {/* ----------------------------- */}
 
         </div>
       </div>

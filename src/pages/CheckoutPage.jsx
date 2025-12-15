@@ -8,8 +8,7 @@ import toast from 'react-hot-toast';
 export default function CheckoutPage({ cart, setCart, user, userData }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  
-  // Formular Livrare
+
   const [shipping, setShipping] = useState({
     fullName: user?.displayName || '',
     address: '',
@@ -19,15 +18,12 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
     phone: userData?.phone || ''
   });
 
-  // Formular Card (Fake Stripe UI)
   const [card, setCard] = useState({ number: '', expiry: '', cvc: '' });
 
-  // Calcule
   const subtotal = cart.reduce((acc, item) => acc + (Number(item.price) * (item.quantity || 1)), 0);
-  const shippingCost = subtotal > 100 ? 0 : 20; // Livrare gratis peste 500 RON
+  const shippingCost = subtotal > 100 ? 0 : 20;
   const total = subtotal + shippingCost;
 
-  // Redirect daca cosul e gol
   useEffect(() => {
     if (cart.length === 0) navigate('/shop');
   }, [cart, navigate]);
@@ -38,7 +34,7 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
 
   const handleCardChange = (e) => {
     let val = e.target.value;
-    if (e.target.name === 'number') val = val.replace(/\D/g, '').slice(0, 16); // Doar cifre, max 16
+    if (e.target.name === 'number') val = val.replace(/\D/g, '').slice(0, 16);
     if (e.target.name === 'cvc') val = val.replace(/\D/g, '').slice(0, 3);
     if (e.target.name === 'expiry') {
         val = val.replace(/\D/g, '');
@@ -50,8 +46,7 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (!user) return toast.error("Trebuie să fii logat!");
-    
-    // Validari simple
+
     if (!shipping.address || !shipping.city || !shipping.phone) return toast.error("Completează adresa de livrare!");
     if (card.number.length < 16 || !card.cvc || !card.expiry) return toast.error("Datele cardului sunt incomplete!");
 
@@ -59,17 +54,14 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
     const toastId = toast.loading("Processing Secure Payment...");
 
     try {
-      // 1. Simulam o intarziere de procesare Stripe (2 secunde)
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // 2. Cream comanda in Firebase
       const orderData = {
         userId: user.uid,
         userEmail: user.email,
         username: shipping.fullName,
         phone: shipping.phone,
         
-        // Date Livrare
         shippingAddress: {
             address: shipping.address,
             city: shipping.city,
@@ -82,18 +74,17 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
         shippingCost: shippingCost,
         total: total,
         
-        status: 'processing', // Status initial
+        status: 'processing',
         paymentMethod: 'card_stripe_simulated',
-        isPaid: true, // Marcam ca platita
+        isPaid: true,
         createdAt: serverTimestamp()
       };
 
       await addDoc(collection(db, "orders"), orderData);
 
-      // 3. Success
       toast.success("PAYMENT SUCCESSFUL!", { id: toastId });
-      setCart([]); // Golim cosul
-      navigate('/profile'); // Trimitem userul la istoric comenzi
+      setCart([]);
+      navigate('/profile');
 
     } catch (error) {
       console.error(error);
@@ -107,21 +98,14 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
     <div className="min-h-screen bg-gray-50 pt-24 pb-20 font-mono">
       <div className="max-w-7xl mx-auto px-4">
         
-        {/* Header */}
         <div className="flex items-center gap-2 mb-8 text-gray-400 hover:text-black transition-colors w-fit">
             <ArrowLeft size={20} />
             <Link to="/shop" className="font-bold uppercase">Back to Shop</Link>
         </div>
-
         <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-8">SECURE CHECKOUT</h1>
-
-        <div className="grid lg:grid-cols-3 gap-12">
-            
-            {/* --- STANGA: FORMULARE --- */}
+        <div className="grid lg:grid-cols-3 gap-12"> 
             <div className="lg:col-span-2 space-y-8">
-                
-                {/* 1. SHIPPING INFO */}
-                <div className="bg-white border-4 border-black p-6 shadow-brutal">
+               <div className="bg-white border-4 border-black p-6 shadow-brutal">
                     <h2 className="text-2xl font-black uppercase mb-6 flex items-center gap-2">
                         <MapPin className="text-neon" /> SHIPPING DATA
                     </h2>
@@ -152,14 +136,10 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
                         </div>
                     </form>
                 </div>
-
-                {/* 2. PAYMENT INFO (Fake Stripe) */}
                 <div className="bg-black text-white border-4 border-neon p-6 shadow-[8px_8px_0_0_#39FF14]">
                     <h2 className="text-2xl font-black uppercase mb-6 flex items-center gap-2 text-neon">
                         <CreditCard /> PAYMENT METHOD
                     </h2>
-                    
-                    {/* Card Visualizer */}
                     <div className="mb-6 p-4 border-2 border-gray-700 bg-gray-900 rounded-lg max-w-sm mx-auto md:mx-0 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-20"><CreditCard size={100} /></div>
                         <div className="relative z-10">
@@ -202,8 +182,7 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
                 </div>
 
             </div>
-
-            {/* --- DREAPTA: ORDER SUMMARY --- */}
+            
             <div className="lg:col-span-1">
                 <div className="bg-white border-4 border-black p-6 sticky top-24">
                     <h3 className="text-xl font-black uppercase mb-4 border-b-4 border-black pb-2">ORDER SUMMARY</h3>

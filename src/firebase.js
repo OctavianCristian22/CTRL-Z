@@ -47,7 +47,7 @@ export const createOrder = async (userId, orderData) => {
     });
     return docRef.id;
 };
-// test
+
 export const checkUsernameAvailability = async (username) => {
   const usernameRef = doc(db, "usernames", username.toLowerCase());
   const snap = await getDoc(usernameRef);
@@ -152,11 +152,9 @@ export const toggleWishlist = async (userId, product) => {
   const docSnap = await getDoc(wishlistRef);
 
   if (docSnap.exists()) {
-    // Daca exista, il stergem
     await deleteDoc(wishlistRef);
     return { added: false, message: "REMOVED FROM WISHLIST" };
   } else {
-    // Daca nu exista, il adaugam (salvam doar datele esentiale pentru afisare rapida)
     const { id, name, price, image, category } = product;
     await setDoc(wishlistRef, {
       id, name, price, image: image || null, category: category || 'item',
@@ -166,7 +164,6 @@ export const toggleWishlist = async (userId, product) => {
   }
 };
 
-// Verifica daca un produs e in wishlist (pentru butonul inimioara)
 export const checkInWishlist = async (userId, productId) => {
   if (!userId) return false;
   const docSnap = await getDoc(doc(db, "users", userId, "wishlist", productId));

@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Filter, Search } from 'lucide-react';
-import { db } from '../firebase'; // Importam baza de date
+import { db } from '../firebase'; 
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'; 
 import { Link } from 'react-router-dom';
 
 export default function Shop({ addToCart, user }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [categoryFilter, setCategoryFilter] = useState('all'); // all, gear, tech, access
+  const [categoryFilter, setCategoryFilter] = useState('all'); 
   const [searchTerm, setSearchTerm] = useState('');
 
-  // --- 1. CONECTARE LA DATABASE (REAL TIME) ---
+
   useEffect(() => {
-    // Luam produsele ordonate dupa data crearii (cele noi primele)
+
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -27,7 +27,6 @@ export default function Shop({ addToCart, user }) {
     return () => unsubscribe();
   }, []);
 
-  // --- 2. LOGICA DE FILTRARE ---
   const filteredProducts = products.filter(product => {
     const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -37,16 +36,13 @@ export default function Shop({ addToCart, user }) {
   return (
     <div className="min-h-screen bg-concrete p-4 md:p-8 pt-24 pb-20">
       
-      {/* HEADER SHOP */}
+
       <div className="max-w-7xl mx-auto mb-12 animate-in fade-in slide-in-from-bottom-4">
         <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4">
             DEPOT_<span className="text-neon bg-black px-2">ACCESS</span>
         </h1>
-        
-        {/* FILTRE & CAUTARE */}
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-end border-b-4 border-black pb-6">
-            
-            {/* Categoriile */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-end border-b-4 border-black pb-6"> 
+
             <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
                 {['all', 'gear', 'tech', 'access'].map(cat => (
                     <button 
@@ -63,7 +59,6 @@ export default function Shop({ addToCart, user }) {
                 ))}
             </div>
 
-            {/* Bara Cautare */}
             <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-3 text-gray-400" size={20} />
                 <input 
@@ -77,7 +72,6 @@ export default function Shop({ addToCart, user }) {
         </div>
       </div>
 
-      {/* LISTA PRODUSE */}
       <div className="max-w-7xl mx-auto">
         
         {loading ? (
@@ -93,8 +87,7 @@ export default function Shop({ addToCart, user }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                         {filteredProducts.map((product) => (
     <div key={product.id} className="group bg-white border-4 border-black relative hover:-translate-y-2 transition-transform duration-200 shadow-brutal">
-        
-        {/* MODIFICARE: Imaginea este acum un LINK */}
+
         <Link to={`/product/${product.id}`} className="block aspect-square bg-gray-100 border-b-4 border-black relative overflow-hidden cursor-pointer">
             {product.image ? (
                 <img src={product.image} alt={product.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
@@ -105,11 +98,8 @@ export default function Shop({ addToCart, user }) {
                 {product.category?.toUpperCase() || 'ITEM'}
             </div>
         </Link>
-
-        {/* Detalii */}
         <div className="p-6">
             <div className="flex justify-between items-start mb-2">
-                {/* MODIFICARE: Titlul este Link */}
                 <Link to={`/product/${product.id}`} className="hover:text-neon transition-colors">
                     <h3 className="text-xl font-black uppercase leading-tight">{product.name}</h3>
                 </Link>
@@ -117,12 +107,9 @@ export default function Shop({ addToCart, user }) {
                     {product.price} RON
                 </span>
             </div>
-            
-            {/* ... restul descrierii ... */}
 
             <button 
                 onClick={() => addToCart(product)}
-                // ... stilurile butonului ...
             >
                 <ShoppingCart size={18} />
                 ADAUGA IN LOOT

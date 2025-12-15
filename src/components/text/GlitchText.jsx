@@ -10,11 +10,9 @@ const GlitchText = ({
 }) => {
   const duration = 2 / speed; 
   
-  // State-uri pentru control
   const [isAutoGlitching, setIsAutoGlitching] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // LOGICA TIMER (Glitch Automat)
   useEffect(() => {
     if (!triggerEvery || triggerEvery <= 0) return;
 
@@ -30,8 +28,6 @@ const GlitchText = ({
     return () => clearInterval(intervalId);
   }, [triggerEvery]);
 
-  // Calculam daca efectul trebuie sa fie activ ACUM
-  // Activ daca: (E Hover si e permis) SAU (E declansat automat de timer)
   const isActive = isAutoGlitching;
 
   return (
@@ -114,14 +110,11 @@ const GlitchText = ({
 
       <div 
         className="glitch-wrapper font-black uppercase tracking-tighter"
-        style={{ '--duration': `${duration}s` }}
-      >
-        {/* Textul Principal (Static si Curat) */}
+        style={{ '--duration': `${duration}s` }}>
         <span className="glitch-base text-current block">
           {children}
         </span>
 
-        {/* Straturile de Glitch - Primesc clasa 'glitch-active' doar cand trebuie */}
         <span 
           className={`glitch-layer ${isActive ? 'glitch-active' : ''}`} 
           data-text={children}

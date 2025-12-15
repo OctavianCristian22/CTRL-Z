@@ -8,13 +8,11 @@ import { useNavigate } from 'react-router-dom';
 export default function Admin({ user, userData }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('orders');
-  
-  // State Comenzi
+
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState({ total: 0, count: 0, pending: 0 });
-  const [expandedOrderId, setExpandedOrderId] = useState(null); // <--- STATE NOU PENTRU EXPANDARE
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
 
-  // State Produse
   const [products, setProducts] = useState([]);
   const [isEditing, setIsEditing] = useState(null);
   
@@ -22,7 +20,6 @@ export default function Admin({ user, userData }) {
     name: '', price: '', category: '', image: '', description: '', specs: []
   });
 
-  // --- SECURITATE (ROLE BASED) ---
   useEffect(() => {
     if (userData) {
         if (userData.role !== 'admin') {
@@ -31,9 +28,7 @@ export default function Admin({ user, userData }) {
     }
   }, [user, userData, navigate]);
 
-  // FETCH DATE
   useEffect(() => {
-    // Orders
     const qOrders = query(collection(db, "orders"), orderBy("createdAt", "desc"));
     const unsubOrders = onSnapshot(qOrders, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -43,7 +38,6 @@ export default function Admin({ user, userData }) {
       setStats({ total, count: data.length, pending });
     });
 
-    // Products
     const qProducts = collection(db, "products");
     const unsubProducts = onSnapshot(qProducts, (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -68,7 +62,6 @@ export default function Admin({ user, userData }) {
       }
   };
 
-  // --- LOGICA PRODUSE (ADD/EDIT/DELETE) ---
   const addSpecField = () => setFormData({ ...formData, specs: [...formData.specs, { key: '', value: '' }] });
   const removeSpecField = (index) => setFormData({ ...formData, specs: formData.specs.filter((_, i) => i !== index) });
   const updateSpecField = (index, field, text) => {
@@ -113,8 +106,7 @@ export default function Admin({ user, userData }) {
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 md:p-8 pt-24 pb-20">
-      
-      {/* Header Panel */}
+
       <div className="flex flex-col md:flex-row justify-between items-end border-b-4 border-neon pb-4 mb-8">
         <div>
             <h1 className="text-4xl md:text-6xl font-black text-neon tracking-tighter">COMMAND_CENTER</h1>
@@ -126,17 +118,14 @@ export default function Admin({ user, userData }) {
         </div>
       </div>
 
-      {/* --- TAB: ORDERS --- */}
       {activeTab === 'orders' && (
         <div className="animate-in fade-in">
-            {/* Stats Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 <div className="bg-gray-900 border-2 border-gray-800 p-6"><div className="flex justify-between items-start mb-4"><DollarSign className="text-neon" size={32} /><span className="text-xs text-gray-500">TOTAL REVENUE</span></div><div className="text-4xl font-black text-white">{stats.total} RON</div></div>
                 <div className="bg-gray-900 border-2 border-gray-800 p-6"><div className="flex justify-between items-start mb-4"><Package className="text-white" size={32} /><span className="text-xs text-gray-500">TOTAL ORDERS</span></div><div className="text-4xl font-black text-white">{stats.count}</div></div>
                 <div className="bg-gray-900 border-2 border-gray-800 p-6"><div className="flex justify-between items-start mb-4"><AlertTriangle className="text-yellow-500" size={32} /><span className="text-xs text-gray-500">PENDING / PROCESSING</span></div><div className="text-4xl font-black text-yellow-500">{stats.pending}</div></div>
             </div>
 
-            {/* Orders Table */}
             <div className="border-2 border-gray-800 bg-black overflow-x-auto shadow-brutal">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-gray-900 text-gray-500 text-xs uppercase border-b-2 border-gray-800">
@@ -152,7 +141,6 @@ export default function Admin({ user, userData }) {
                     <tbody className="text-sm">
                         {orders.map((order) => (
                             <React.Fragment key={order.id}>
-                                {/* RAND PRINCIPAL */}
                                 <tr className={`border-b border-gray-800 hover:bg-gray-900/50 transition-colors ${expandedOrderId === order.id ? 'bg-gray-900' : ''}`}>
                                     <td className="p-4 text-center">
                                         <button onClick={() => toggleOrderDetails(order.id)} className="text-neon hover:scale-110 transition-transform">
@@ -183,13 +171,11 @@ export default function Admin({ user, userData }) {
                                     </td>
                                 </tr>
 
-                                {/* RAND DETALII (EXPANDABIL) */}
                                 {expandedOrderId === order.id && (
                                     <tr>
                                         <td colSpan="6" className="bg-black border-b-4 border-gray-800 p-0">
                                             <div className="grid md:grid-cols-2 gap-0 animate-in slide-in-from-top-2 duration-200">
-                                                
-                                                {/* STANGA: Shipping Data */}
+
                                                 <div className="p-6 border-r border-gray-800">
                                                     <h3 className="text-neon font-black uppercase mb-4 flex items-center gap-2"><MapPin size={18}/> DELIVERY INTEL</h3>
                                                     {order.shippingAddress ? (
@@ -214,7 +200,6 @@ export default function Admin({ user, userData }) {
                                                     </div>
                                                 </div>
 
-                                                {/* DREAPTA: Item Manifest */}
                                                 <div className="p-6 bg-gray-900/30">
                                                     <h3 className="text-neon font-black uppercase mb-4 flex items-center gap-2"><List size={18}/> CARGO MANIFEST</h3>
                                                     <div className="space-y-3">
@@ -257,7 +242,6 @@ export default function Admin({ user, userData }) {
         </div>
       )}
 
-      {/* --- TAB: PRODUCTS (Formularul a ramas neschimbat, doar il re-randez) --- */}
       {activeTab === 'products' && (
         <div className="animate-in fade-in">
              <div className={`border-4 ${isEditing ? 'border-yellow-500' : 'border-gray-800'} bg-gray-900/50 p-6 mb-12`}>
@@ -270,8 +254,7 @@ export default function Admin({ user, userData }) {
                             <div><label className="text-xs font-bold text-gray-500 uppercase">Category</label><select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-black border-2 border-gray-700 p-3 text-white focus:border-neon focus:outline-none font-bold"><option value="gear">GEAR</option><option value="tech">TECH</option><option value="access">ACCESS</option></select></div>
                         </div>
                         <div><label className="text-xs font-bold text-gray-500 uppercase">Image URL</label><input type="text" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="w-full bg-black border-2 border-gray-700 p-3 text-white focus:border-neon focus:outline-none font-bold text-xs" /></div>
-                        
-                        {/* SPECIFICATII */}
+
                         <div className="bg-black border-2 border-gray-700 p-4">
                             <label className="text-xs font-bold text-gray-500 uppercase mb-2 block flex items-center gap-2"><List size={14}/> Tech Specs</label>
                             {formData.specs.map((spec, index) => (

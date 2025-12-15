@@ -8,7 +8,6 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
     const [promoCode, setPromoCode] = useState('');
     const [discount, setDiscount] = useState(0);
 
-    // --- LOGICA DE CANTITATE SI STERGERE ---
     const updateQuantity = (id, delta) => {
         setCart(prev => prev.map(item => {
             if (item.id === id) return { ...item, quantity: Math.max(1, (item.quantity || 1) + delta) };
@@ -18,7 +17,6 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
 
     const removeFromCart = (id) => setCart(cart.filter((item) => item.id !== id));
 
-    // --- LOGICA DE BANI ---
     const calculateSubtotal = () => cart.reduce((total, item) => total + (Number(item.price) * (item.quantity || 1)), 0);
     
     const calculateTotal = () => {
@@ -26,14 +24,13 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
         return subtotal - (subtotal * discount);
     };
 
-    // --- LOGICA DE PROMO CODE (HACKER / STUDENT) ---
     const applyPromoCode = () => {
         const code = promoCode.toUpperCase().trim();
         if (code === 'HACKER') {
-            setDiscount(0.20); // 20%
+            setDiscount(0.20); 
             toast.success("ACCESS GRANTED: 20% OFF", { icon: '🔓', style: {background: '#39FF14', color: 'black', fontWeight: 'bold'} });
         } else if (code === 'STUDENT') {
-            setDiscount(0.10); // 10%
+            setDiscount(0.10);
             toast.success("STUDENT DISCOUNT: 10% OFF");
         } else {
             setDiscount(0);
@@ -41,10 +38,7 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
         }
     };
 
-    // --- HANDLER PLATA ---
     const handleInitiateCheckout = () => {
-        // Aici apelam functia din App.jsx, dar ii trimitem si totalul calculat cu reducere!
-        // Nota: Trebuie sa actualizam un pic si App.jsx ca sa accepte reducerea, dar momentan merge
         onCheckout({
             finalTotal: calculateTotal(),
             discountValue: discount
@@ -52,8 +46,8 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
     };
     
     const goToCheckout = () => {
-        onClose(); // Inchidem sertarul
-        navigate('/checkout'); // Mergem la pagina dedicata
+        onClose();
+        navigate('/checkout');
     };
 
     if (!isOpen) return null;
@@ -61,16 +55,13 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
     return (
         <div className="fixed inset-0 z-[100] flex justify-end">
             
-            {/* Overlay Intunecat */}
             <div 
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
                 onClick={onClose}
             ></div>
 
-            {/* Sertarul Propriu-Zis */}
             <div className="relative w-full max-w-md bg-white h-full shadow-2xl border-l-4 border-black flex flex-col animate-in slide-in-from-right duration-300">
                 
-                {/* Header */}
                 <div className="bg-black text-neon p-6 flex justify-between items-center border-b-4 border-black">
                     <h2 className="text-2xl font-black uppercase flex items-center gap-2 tracking-tighter">
                         <ShoppingBag className="text-neon" /> LOOT STASH ({cart.length})
@@ -78,7 +69,6 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
                     <button onClick={onClose} className="hover:text-white transition-colors"><X size={32} /></button>
                 </div>
                 
-                {/* Lista Produse */}
                 <div className="flex-1 overflow-y-auto p-4 bg-concrete">
                     {cart.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center opacity-50 text-gray-400">
@@ -92,7 +82,7 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
                                 <div key={item.id} className="bg-white border-2 border-black p-3 shadow-brutal flex flex-col gap-2 group">
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-3 w-full">
-                                            {/* Imagine Produs (Safe Check) */}
+
                                             <div className="w-16 h-16 bg-gray-200 border-2 border-black flex items-center justify-center overflow-hidden shrink-0">
                                                 {item.image ? (
                                                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -100,21 +90,18 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
                                                     <div className="text-[10px] font-black text-gray-400">NO IMG</div>
                                                 )}
                                             </div>
-                                            
-                                            {/* Info Produs */}
+
                                             <div className="flex-1">
                                                 <h4 className="font-black uppercase text-sm leading-tight">{item.name}</h4>
                                                 <span className="text-xs font-bold text-neon bg-black px-1 mt-1 inline-block">{item.price} RON</span>
                                             </div>
                                         </div>
                                         
-                                        {/* Buton Stergere */}
                                         <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-600 transition-colors">
                                             <Trash2 size={20} />
                                         </button>
                                     </div>
 
-                                    {/* Controale Cantitate */}
                                     <div className="flex items-center justify-between border-t border-dashed border-gray-300 pt-2 mt-1">
                                         <span className="text-xs font-bold text-gray-500">QUANTITY</span>
                                         <div className="flex items-center gap-0 border-2 border-black">
@@ -129,11 +116,9 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
                     )}
                 </div>
                 
-                {/* Footer (Total + Checkout) */}
                 {cart.length > 0 && (
                     <div className="bg-white border-t-4 border-black p-6 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
                         
-                        {/* Zona Promo Code */}
                         <div className="mb-6">
                             <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1 mb-2"><Tag size={12}/> ACCESS CODE</label>
                             <div className="flex gap-2">
@@ -149,7 +134,6 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
                             {discount > 0 && <p className="text-xs font-bold text-neon bg-black inline-block px-1 mt-2 animate-pulse">DISCOUNT APPLIED: -{discount * 100}%</p>}
                         </div>
 
-                        {/* Sumar Totaluri */}
                         <div className="space-y-2 mb-6 pb-4 border-b-2 border-dashed border-gray-300">
                             <div className="flex justify-between text-sm font-bold text-gray-500">
                                 <span>Subtotal</span>
@@ -167,7 +151,6 @@ export default function CartDrawer({ isOpen, onClose, cart, setCart, onCheckout,
                             </div>
                         </div>
 
-                        {/* Buton Checkout */}
                         <button 
                             onClick={goToCheckout} 
                             className="w-full bg-neon text-black font-black py-4 text-xl hover:bg-black hover:text-neon border-2 border-black transition-all shadow-brutal flex items-center justify-center gap-2 group uppercase tracking-widest"

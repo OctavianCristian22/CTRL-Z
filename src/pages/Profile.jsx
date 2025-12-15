@@ -11,19 +11,16 @@ import { toggleWishlist } from '../firebase';
 export default function Profile({ user, userData, setUser, setUserData }) {
   const [editMode, setEditMode] = useState(false);
   const navigate = useNavigate();
-  
-  // State Profile Data
+
   const [tempPhone, setTempPhone] = useState('');
   const [tempUsername, setTempUsername] = useState('');
   const [tempPin, setTempPin] = useState(''); 
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [wishlist, setWishlist] = useState([]);
-  
-  // State Order History
+
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
-  // --- 1. INITIALIZARE DATE PROFIL ---
   useEffect(() => {
       if(user) setTempUsername(user.displayName || '');
       if(userData) {
@@ -33,11 +30,9 @@ export default function Profile({ user, userData, setUser, setUserData }) {
       }
   }, [user, userData]);
 
-  // --- 2. FETCH ISTORIC COMENZI (LIVE) ---
   useEffect(() => {
     if (!user) return;
 
-    // Luam comenzile doar ale userului curent, ordonate descrescator dupa data
     const q = query(
         collection(db, "orders"),
         where("userId", "==", user.uid),
@@ -53,7 +48,6 @@ export default function Profile({ user, userData, setUser, setUserData }) {
         setLoadingOrders(false);
     }, (error) => {
         console.error("Order Fetch Error:", error);
-        // Daca apare eroare de index, avertizam userul
         if(error.message.includes("index")) {
              console.log("⚠️ CLICK PE LINK-UL DIN CONSOLA PENTRU A CREA INDEXUL FIREBASE!");
         }
@@ -76,7 +70,6 @@ const removeFromWishlist = async (item) => {
     toast.success("REMOVED FROM SAVED");
 };
 
-  // --- 3. HELPERE ---
   const isAdmin = userData?.role === 'admin';
 
   const handleCopyId = () => {
@@ -111,7 +104,6 @@ const removeFromWishlist = async (item) => {
     }
   };
 
-  // Helper pentru status culori
   const getStatusStyle = (status) => {
       switch(status) {
           case 'pending': return 'border-yellow-500 text-yellow-500 bg-yellow-500/10';
@@ -132,16 +124,14 @@ const removeFromWishlist = async (item) => {
 
   return (
     <div className="max-w-6xl mx-auto pt-10 animate-in fade-in slide-in-from-bottom-4 px-4 pb-20">
-      
-      {/* Header */}
+
       <div className="flex items-center gap-4 mb-8">
         <Link to="/" className="bg-black text-white p-2 hover:bg-neon hover:text-black transition-all"><ArrowLeft /></Link>
         <h2 className="text-4xl font-black uppercase">/// Personnel_File</h2>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
-        
-        {/* --- COLOANA STANGA: DATE USER --- */}
+
         <div className="flex flex-col gap-6">
              <div className="bg-white border-4 border-black p-6 shadow-brutal text-center">
                  <div className="w-40 h-40 mx-auto bg-gray-200 rounded-full border-4 border-black overflow-hidden mb-4 flex items-center justify-center relative">
@@ -162,10 +152,8 @@ const removeFromWishlist = async (item) => {
              </div>
         </div>
 
-        {/* --- COLOANA DREAPTA: CONFIG & ADMIN --- */}
         <div className="flex flex-col gap-6">
-            
-            {/* ADMIN BTN */}
+
             {isAdmin && (
                 <div onClick={() => navigate('/admin')} className="bg-black border-4 border-neon p-6 shadow-[8px_8px_0px_0px_rgba(57,255,20,0.5)] cursor-pointer hover:translate-y-[-2px] hover:shadow-[12px_12px_0px_0px_rgba(57,255,20,0.7)] transition-all group relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-100 transition-opacity"><ShieldAlert size={64} className="text-neon animate-pulse" /></div>
@@ -190,7 +178,6 @@ const removeFromWishlist = async (item) => {
         </div>
       </div>
 
-      {/* --- SECTIUNEA NOUA: ISTORIC COMENZI --- */}
       <div className="border-t-4 border-black pt-8 mb-12">
       <h2 className="text-3xl font-black uppercase mb-6 flex items-center gap-3">
           <Heart size={32} className="text-red-600" fill="black" /> SAVED_GEAR ({wishlist.length})
@@ -238,7 +225,6 @@ const removeFromWishlist = async (item) => {
                   {orders.map((order) => (
                       <div key={order.id} className="bg-white border-2 border-black p-4 shadow-brutal hover:translate-x-1 transition-transform group">
                           
-                          {/* Order Header */}
                           <div className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-gray-100 pb-2 mb-4 gap-4">
                               <div>
                                   <div className="flex items-center gap-2">
@@ -254,7 +240,6 @@ const removeFromWishlist = async (item) => {
                               </div>
                           </div>
 
-                          {/* Items Summary */}
                           <div className="flex flex-col md:flex-row justify-between items-end">
                               <div className="space-y-1 w-full md:w-auto">
                                   {order.items.map((item, i) => (

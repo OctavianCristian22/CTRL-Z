@@ -51,9 +51,6 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-
-  // --- LOGICA LAYOUT: Pagini "Immersive" (Full Black, fara UI standard) ---
-  // Aici includem Hub-ul (/) si Secret Room (/coming-soon)
   const isImmersive = location.pathname === '/' || location.pathname === '/coming-soon';
 
   useEffect(() => {
@@ -263,14 +260,11 @@ export default function App() {
   };
 
   return (
-    // MODIFICARE: Folosim isImmersive pentru a scoate padding si bg-concrete de pe Hub SI ComingSoon
     <div className={`min-h-screen font-mono relative overflow-x-hidden ${isImmersive ? 'bg-black p-0' : 'bg-concrete p-0 md:p-8 md:pt-0 bg-noise'}`}>
       
       <Toaster position="bottom-right" toastOptions={{ className: 'font-mono font-bold border-2 border-black shadow-brutal rounded-none' }} />
       <ScrollToTop />
       <CommandPalette />
-
-      {/* Sidebar-ul ramane, se ocupa el sa dispara pe '/', dar va aparea pe '/coming-soon' ca sa poti iesi */}
       <PortalSidebar />
       
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} setCart={setCart} user={user} userData={userData} openLoginModal={() => setShowLoginModal(true)} onCheckout={handleCheckout} />
@@ -287,8 +281,6 @@ export default function App() {
           </div>
         )}
         <button type="submit" className="bg-black text-neon font-black py-3 text-xl hover:bg-neon hover:text-black border-2 border-transparent hover:border-black transition-all shadow-brutal mt-2 uppercase">{isRegistering ? 'Initialize_User' : 'Connect'}</button></form><div className="flex items-center gap-4 my-6"><div className="h-1 bg-black flex-1"></div><span className="font-bold text-gray-400">SAU</span><div className="h-1 bg-black flex-1"></div></div><button onClick={handleGoogleLogin} className="w-full bg-white text-black font-bold py-3 border-2 border-black hover:bg-gray-100 transition-all flex items-center justify-center gap-2"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="G" /> Google Access</button><div className="mt-6 text-center text-sm font-bold">{isRegistering ? "Ai deja cont?" : "Nu ai cont?"}<button onClick={() => { setIsRegistering(!isRegistering); }} className="ml-2 text-blue-600 hover:underline hover:text-neon hover:bg-black px-1">{isRegistering ? "Loghează-te" : "Fă-ți cont"}</button></div></>)}</div></div>)}
-
-      {/* NAVBAR: Randam DOAR daca NU suntem pe o pagina Immersive (Hub sau Secret Room) */}
       {!isImmersive && (
         <nav className="flex flex-col md:flex-row justify-between items-center mb-16 border-b-4 border-black pb-6 sticky top-0 bg-[#f0f0f0] z-50 p-4 md:pt-4 md:ml-16 transition-all">
           <Link to="/store" className="flex items-center gap-2 group cursor-pointer mb-4 md:mb-0"><div className="bg-black text-neon p-2 px-4 font-black text-2xl md:text-3xl border-2 border-black shadow-brutal tracking-tighter group-hover:bg-neon group-hover:text-black transition-all">[ CTRL ] - [ Z ]</div></Link>
@@ -315,8 +307,6 @@ export default function App() {
           </div>
         </nav>
       )}
-
-      {/* MAIN: Adaugam margin-left pentru sidebar doar daca NU suntem pe o pagina Immersive */}
       <main className={`min-h-[50vh] ${!isImmersive ? 'md:ml-16' : ''}`}>
         <Routes>
           <Route path="/" element={<Hub user={user} userData={userData} openLoginModal={() => setShowLoginModal(true)} />} />
@@ -332,8 +322,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-
-      {/* FOOTER: Randam DOAR daca NU suntem pe o pagina Immersive */}
+      
       {!isImmersive && (
         <footer className="text-center py-10 border-t-4 border-black opacity-50 hover:opacity-100 transition-opacity mt-20 md:ml-16">
           <p className="font-bold">© 2025 CTRL-Z. Făcut de studenți, pentru studenți.</p>
