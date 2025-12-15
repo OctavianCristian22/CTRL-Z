@@ -61,10 +61,9 @@ export const reserveUsername = async (username, uid) => {
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    await createUserDocument(result.user, { username: result.user.displayName, phone: "" });
-    return result.user;
+    return result; 
   } catch (error) {
-    console.error("Eroare Google:", error);
+    console.error("Eroare la Google Sign In:", error);
     throw error;
   }
 };
@@ -144,6 +143,34 @@ export const updateReview = async (reviewId, newComment, newRating) => {
         comment: newComment,
         rating: newRating 
     });
+};
+
+export const toggleWishlist = async (userId, product) => {
+  if (!userId) throw new Error("User not logged in");
+  
+  const wishlistRef = doc(db, "users", userId, "wishlist", product.id);
+  const docSnap = await getDoc(wishlistRef);
+
+  if (docSnap.exists()) {
+    // Daca exista, il stergem
+    await deleteDoc(wishlistRef);
+    return { added: false, message: "REMOVED FROM WISHLIST" };
+  } else {
+    // Daca nu exista, il adaugam (salvam doar datele esentiale pentru afisare rapida)
+    const { id, name, price, image, category } = product;
+    await setDoc(wishlistRef, {
+      id, name, price, image: image || null, category: category || 'item',
+      savedAt: new Date()
+    });
+    return { added: true, message: "SAVED TO WISHLIST" };
+  }
+};
+
+// Verifica daca un produs e in wishlist (pentru butonul inimioara)
+export const checkInWishlist = async (userId, productId) => {
+  if (!userId) return false;
+  const docSnap = await getDoc(doc(db, "users", userId, "wishlist", productId));
+  return docSnap.exists();
 };
 
 export const updateUserProfile = (user, username) => updateProfile(user, { displayName: username });

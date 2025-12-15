@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, Lock } from 'lucide-react';
+import GlitchText from '../components/text/GlitchText';
 
 export default function ComingSoon() {
   const [text, setText] = useState('');
@@ -29,9 +30,12 @@ export default function ComingSoon() {
             </div>
         </div>
 
-        <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-8">
-          CTRL <span className="text-neon">- Z</span>
-        </h2>
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-8 ">
+                    <GlitchText speed={100} enableOnHover={true} triggerEvery={3000}>CTRL&nbsp;</GlitchText>
+                    <span className="text-neon">
+                        <GlitchText speed={100} enableOnHover={true} triggerEvery={3000}>- Z</GlitchText>
+                    </span>
+                </h1>
 
         <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white mb-2 relative inline-block opacity-50">
           COMING SOON

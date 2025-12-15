@@ -1,103 +1,141 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, Filter, Zap, ShieldAlert, Cpu, Settings, User, Terminal, Eye, Star } from 'lucide-react';
-import ProductModal from '../components/ProductModal';
+import React, { useState, useEffect } from 'react';
+import { ShoppingCart, Filter, Search } from 'lucide-react';
+import { db } from '../firebase'; // Importam baza de date
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'; 
+import { Link } from 'react-router-dom';
 
-// --- BAZA DE DATE (PRODUSE) ---
-const PRODUCTS = [
-  { id: 1, name: "MAGMA MAT™", price: 149, category: "PERIPHERALS", stock: 24, desc: "Mousepad încălzit.", longDesc: "Singurul lucru cald din viața ta de student...", specs: { "Dimensions": "900x400mm", "Power": "USB-C 15W" }, image: "/magma-mat.jpg", gallery: ["/magma-mat.jpg"], icon: <Zap size={40} /> },
-  { id: 2, name: "AIRGAP STAND", price: 69, category: "ACCESSORIES", stock: 120, desc: "Nu-ți prăji laptopul.", longDesc: "Ridică laptopul la nivelul ochilor...", specs: { "Material": "Aluminum Alloy" }, image: null, icon: <ShieldAlert size={40} /> },
-  { id: 3, name: "MIDNIGHT BAR", price: 129, category: "LIGHTING", stock: 5, desc: "Lumină doar pe tastatură.", longDesc: "Lampa de monitor care nu reflectă...", specs: { "CRI": ">95" }, image: null, icon: <Cpu size={40} /> },
-  { id: 4, name: "NEURAL NOISE", price: 299, category: "AUDIO", stock: 15, desc: "Căști cu izolare fonică.", longDesc: "Căști over-ear cu ANC...", specs: { "Battery": "30 Hours" }, image: null, icon: <Settings size={40} /> },
-  { id: 5, name: "BINARY HOODIE", price: 180, category: "APPAREL", stock: 50, desc: "Hanorac negru oversize.", longDesc: "Bumbac 100% organic...", specs: { "Fit": "Oversized" }, image: null, icon: <User size={40} /> },
-  { id: 6, name: "CAFFEINE_V2", price: 45, category: "LIFESTYLE", stock: 200, desc: "Cană termosensibilă.", longDesc: "Când e rece, e neagră complet...", specs: { "Capacity": "450ml" }, image: null, icon: <Terminal size={40} /> }
-];
-
-const CATEGORIES = ["ALL", "PERIPHERALS", "ACCESSORIES", "LIGHTING", "AUDIO", "APPAREL", "LIFESTYLE"];
-
-// Primim user-ul din App.jsx ca sa il dam mai departe la Modal
 export default function Shop({ addToCart, user }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
-  const [selectedProduct, setSelectedProduct] = useState(null); 
-  const searchInputRef = useRef(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [categoryFilter, setCategoryFilter] = useState('all'); // all, gear, tech, access
+  const [searchTerm, setSearchTerm] = useState('');
 
+  // --- 1. CONECTARE LA DATABASE (REAL TIME) ---
   useEffect(() => {
-    const handleKeyDown = (e) => {
-        if (e.key === '/' && document.activeElement !== searchInputRef.current) {
-            e.preventDefault(); searchInputRef.current.focus();
-        }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    // Luam produsele ordonate dupa data crearii (cele noi primele)
+    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const productsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setProducts(productsData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const filteredProducts = PRODUCTS.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === "ALL" || product.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+  // --- 2. LOGICA DE FILTRARE ---
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
   });
 
   return (
-    <div className="max-w-7xl mx-auto animate-in slide-in-from-bottom-4 px-4 pt-8">
-        <ProductModal 
-            product={selectedProduct} 
-            isOpen={!!selectedProduct} 
-            onClose={() => setSelectedProduct(null)} 
-            addToCart={addToCart}
-            user={user} // Trimitem user-ul pentru review-uri
-        />
-
-        <div className="mb-12 border-b-4 border-black pb-8">
-            <h2 className="text-6xl font-black uppercase mb-6">/// DEPOT_ACCESS</h2>
-            <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-                <div className="relative w-full md:w-96 group">
-                    <Search className="absolute top-3 left-3 text-gray-400 group-focus-within:text-neon transition-colors" />
-                    <input ref={searchInputRef} type="text" placeholder="CAUTĂ ECHIPAMENT..." className="w-full bg-white border-2 border-black p-3 pl-10 pr-12 font-bold focus:outline-none focus:ring-4 focus:ring-neon shadow-brutal transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    <div className="absolute top-2 right-2 border border-gray-300 bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-500 pointer-events-none">/</div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    {CATEGORIES.map(cat => (
-                        <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-2 font-bold border-2 border-black uppercase text-sm transition-all ${selectedCategory === cat ? 'bg-black text-neon shadow-brutal' : 'bg-white hover:bg-gray-200'}`}>{cat}</button>
-                    ))}
-                </div>
-            </div>
-        </div>
-
-        {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-20">
-                {filteredProducts.map((product) => (
-                <div key={product.id} onClick={() => setSelectedProduct(product)} className="bg-white border-4 border-black p-6 shadow-brutal hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all duration-200 group flex flex-col justify-between cursor-pointer relative">
-                    <div>
-                        <div className="bg-gray-100 h-56 mb-6 border-2 border-black flex items-center justify-center group-hover:bg-neon/10 transition-colors relative overflow-hidden p-4">
-                            {product.image ? (<img src={product.image} alt={product.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />) : (<div className="scale-150 text-gray-800 group-hover:scale-125 transition-transform duration-500">{product.icon}</div>)}
-                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white px-2 py-1 text-xs font-bold flex items-center gap-1"><Eye size={12}/> QUICK VIEW</div>
-                        </div>
-                        <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-2xl font-black uppercase leading-tight">{product.name}</h3>
-                            <span className="bg-black text-white px-2 py-1 text-[10px] font-bold">{product.category}</span>
-                        </div>
-                        
-                        {/* --- STARS ON CARD (PROFI LOOK) --- */}
-                        <div className="flex items-center gap-1 text-yellow-500 mb-4 text-xs font-bold">
-                            <div className="flex">
-                                {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" className="text-yellow-500" />)}
-                            </div>
-                            <span className="text-gray-400">(Vezi Review-uri)</span>
-                        </div>
-
-                        <p className="text-sm font-bold text-gray-600 mb-6 border-l-2 border-neon pl-3">{product.desc}</p>
-                    </div>
-                    <div className="flex justify-between items-center pt-4 border-t-2 border-black border-dashed mt-auto">
-                        <span className="text-2xl font-black">{product.price} RON</span>
-                        <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="bg-neon text-black font-bold py-2 px-4 border-2 border-black hover:bg-black hover:text-white transition-colors uppercase text-sm">Adauga +</button>
-                    </div>
-                </div>
+    <div className="min-h-screen bg-concrete p-4 md:p-8 pt-24 pb-20">
+      
+      {/* HEADER SHOP */}
+      <div className="max-w-7xl mx-auto mb-12 animate-in fade-in slide-in-from-bottom-4">
+        <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4">
+            DEPOT_<span className="text-neon bg-black px-2">ACCESS</span>
+        </h1>
+        
+        {/* FILTRE & CAUTARE */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-end border-b-4 border-black pb-6">
+            
+            {/* Categoriile */}
+            <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+                {['all', 'gear', 'tech', 'access'].map(cat => (
+                    <button 
+                        key={cat}
+                        onClick={() => setCategoryFilter(cat)}
+                        className={`px-4 py-2 font-bold uppercase border-2 transition-all whitespace-nowrap ${
+                            categoryFilter === cat 
+                            ? 'bg-black text-neon border-black shadow-brutal translate-y-[-2px]' 
+                            : 'bg-white text-gray-500 border-gray-300 hover:border-black hover:text-black'
+                        }`}
+                    >
+                        {cat === 'all' ? 'TOATE' : cat}
+                    </button>
                 ))}
             </div>
+
+            {/* Bara Cautare */}
+            <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                <input 
+                    type="text" 
+                    placeholder="CAUTĂ ECHIPAMENT..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-white border-2 border-black p-2 pl-10 font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(57,255,20,1)] transition-shadow uppercase"
+                />
+            </div>
+        </div>
+      </div>
+
+      {/* LISTA PRODUSE */}
+      <div className="max-w-7xl mx-auto">
+        
+        {loading ? (
+            <div className="text-center py-20 font-mono text-xl animate-pulse font-bold">LOADING_INVENTORY_DATA...</div>
         ) : (
-            <div className="text-center py-20 opacity-50"><Filter size={64} className="mx-auto mb-4" /><h3 className="text-2xl font-black">NICIUN REZULTAT</h3></div>
+            <>
+                {filteredProducts.length === 0 ? (
+                    <div className="text-center py-20 bg-white border-4 border-black shadow-brutal">
+                        <p className="font-black text-2xl uppercase">NICIUN REZULTAT.</p>
+                        <p className="text-gray-500 font-mono">Încearcă altă categorie.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {filteredProducts.map((product) => (
+    <div key={product.id} className="group bg-white border-4 border-black relative hover:-translate-y-2 transition-transform duration-200 shadow-brutal">
+        
+        {/* MODIFICARE: Imaginea este acum un LINK */}
+        <Link to={`/product/${product.id}`} className="block aspect-square bg-gray-100 border-b-4 border-black relative overflow-hidden cursor-pointer">
+            {product.image ? (
+                <img src={product.image} alt={product.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+            ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 font-black text-3xl">NO IMG</div>
+            )}
+            <div className="absolute top-0 right-0 bg-black text-white text-xs font-bold px-3 py-1">
+                {product.category?.toUpperCase() || 'ITEM'}
+            </div>
+        </Link>
+
+        {/* Detalii */}
+        <div className="p-6">
+            <div className="flex justify-between items-start mb-2">
+                {/* MODIFICARE: Titlul este Link */}
+                <Link to={`/product/${product.id}`} className="hover:text-neon transition-colors">
+                    <h3 className="text-xl font-black uppercase leading-tight">{product.name}</h3>
+                </Link>
+                <span className="bg-neon text-black px-2 py-1 font-bold border-2 border-black text-sm whitespace-nowrap">
+                    {product.price} RON
+                </span>
+            </div>
+            
+            {/* ... restul descrierii ... */}
+
+            <button 
+                onClick={() => addToCart(product)}
+                // ... stilurile butonului ...
+            >
+                <ShoppingCart size={18} />
+                ADAUGA IN LOOT
+            </button>
+        </div>
+    </div>
+))}
+                    </div>
+                )}
+            </>
         )}
+      </div>
+
     </div>
   );
 }
-export { PRODUCTS };
