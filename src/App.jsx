@@ -32,6 +32,13 @@ import NeuralUplink from './pages/UPLINK/NeuralUplink';
 import UplinkNavbar from './components/UplinkNavbar';
 
 export default function App() {
+
+  const maintenanceMode = true; 
+
+  if (maintenanceMode) {
+    return <ComingSoon />;
+  }
+  
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [cart, setCart] = useState([]);
