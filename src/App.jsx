@@ -120,24 +120,69 @@ export default function App() {
   useEffect(() => { if (user) localStorage.setItem(`cart_${user.uid}`, JSON.stringify(cart)); }, [cart, user]);
 
   // Auth Logic
-  useEffect(() => {
+useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        if (currentUser.providerData[0].providerId === 'password' && !currentUser.emailVerified) {
-          toast.error("Email neverificat!"); await logout(); setVerificationSent(true); return;
+      try {
+        if (currentUser) {
+          // 1. Verificare Email (Doar pt cei cu user/parola)
+          if (currentUser.providerData[0].providerId === 'password' && !currentUser.emailVerified) {
+            toast.error("Email neverificat! Verifică Inbox/Spam."); 
+            await logout(); 
+            setVerificationSent(true); 
+            setAuthLoading(false);
+            return;
+          }
+
+          // 2. Încercăm să luăm datele din baza de date
+          let data = await getUserDocument(currentUser.uid);
+          
+          // --- FIX PENTRU USERII FĂRĂ DOCUMENT ---
+          if (!data) {
+             console.log("User găsit în Auth, dar fără document în DB. Se creează acum...");
+             const userRef = doc(db, "users", currentUser.uid);
+             const newUserData = {
+                username: currentUser.displayName || "User Nou",
+                email: currentUser.email,
+                phone: "", 
+                createdAt: serverTimestamp(),
+                twoFactorEnabled: false,
+                role: "user",
+                photoURL: currentUser.photoURL || null
+             };
+             
+             await setDoc(userRef, newUserData);
+             data = newUserData;
+             toast.success("Profil recuperat și creat cu succes!", { icon: '🔧' });
+          }
+
+          // 3. Verificare 2FA
+          if (data?.twoFactorEnabled && !sessionStorage.getItem(`2fa_verified_${currentUser.uid}`)) {
+            setUser(null); 
+            setUserData(data); 
+            setShowLoginModal(false); 
+            setShow2FAModal(true); 
+            setAuthLoading(false);
+            return;
+          }
+
+          // 4. Logare reușită
+          setUser(currentUser); 
+          setUserData(data); 
+          setShowLoginModal(false);
+          
+          if (data) {
+          }
+
+        } else {  
+            setUser(null); 
+            setUserData(null); 
         }
-        const data = await getUserDocument(currentUser.uid);
-        setUser(currentUser); 
-        setUserData(data);
-        if (data?.twoFactorEnabled && !sessionStorage.getItem(`2fa_verified_${currentUser.uid}`)) {
-          setUser(null); setUserData(data); setShowLoginModal(false); setShow2FAModal(true); return;
-        }
-        setUser(currentUser); setUserData(data); setShowLoginModal(false);
-        if (data)
-          toast.success(`Welcome back, ${currentUser.displayName || 'Hacker'}!`, { icon: '👋', style: { borderRadius: '0px', border: '2px solid black', background: '#39FF14', color: 'black', fontWeight: 'bold' } });
-      } else {  setUser(null); 
-                setUserData(null); }
+      } catch (error) {
+          console.error("Auth Error:", error);
+          setUser(null);
+      } finally {
           setAuthLoading(false);
+      }
     });
     return () => unsubscribe();
   }, []);
