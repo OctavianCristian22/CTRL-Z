@@ -8,7 +8,7 @@ export default function FAQ() {
     {
       category: "SHOP",
       q: "Cum pot plasa o comandă ?",
-      a: "Navighează în Depot, adaugă itemele dorite în coș și urmează procedura de checkout. Plata se face securizat prin Stripe. Odată confirmată tranzacția, ordinul de livrare este generat instant."
+      a: "Navighează în Depot, adaugă produsele dorite în coș și urmează procedura de checkout. Plata se face securizat prin Stripe. Odată confirmată tranzacția, ordinul de livrare este generat instant."
     },
     {
       category: "SHOP",
@@ -28,7 +28,7 @@ export default function FAQ() {
         {
       category: "SHOP",
       q: "Produsul dorit apare ca >Out of Stock<. Când revine ?",
-      a: "nventarul este actualizat săptămânal. Îți recomandăm să adaugi produsul în Wishlist (Saved Gear) pentru a-l monitoriza rapid când reapare în stoc."
+      a: "Inventarul este actualizat săptămânal. Îți recomandăm să adaugi produsul în Wishlist (Saved Gear) pentru a-l monitoriza rapid când reapare în stoc."
     },
         {
       category: "SHOP",
