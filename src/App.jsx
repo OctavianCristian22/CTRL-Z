@@ -33,7 +33,7 @@ import UplinkNavbar from './components/UplinkNavbar';
 
 export default function App() {
 
-  const maintenanceMode = false; 
+  const maintenanceMode = true; 
 
   if (maintenanceMode) {
     return <ComingSoon />;
