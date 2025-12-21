@@ -1,13 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Clock, User, LogOut, ShieldCheck, LogIn } from 'lucide-react';
-import { logout } from '../firebase';
-import GlitchText from '../components/text/GlitchText';
+import { ShoppingCart, Clock, User, LogOut, ShieldCheck, LogIn, Brain } from 'lucide-react';
+import { logout } from '../../firebase';
+import GlitchText from '../../components/text/GlitchText';
+import LandingNavbar from '../../components/LandingNavbar';
 
 export default function Hub({ user, userData, openLoginModal }) {
   
 return (
     <div className="min-h-screen bg-black text-white font-mono flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <LandingNavbar />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(57,255,20,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(57,255,20,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
         <div className="z-10 w-full max-w-5xl mb-12 flex justify-between items-end border-b-4 border-white pb-4">
             <div>
@@ -49,6 +51,12 @@ return (
                 <ShoppingCart size={80} className="text-white mb-6 group-hover:text-neon group-hover:scale-110 transition-transform duration-300" />
                 <h2 className="text-4xl font-black uppercase z-10">CTRL-Z SHOP</h2>
                 <p className="text-gray-400 font-bold mt-2 z-10 group-hover:text-white">GEAR // TECH // ACCESS</p>
+                <div className="absolute inset-0 bg-neon/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 skew-y-12 origin-bottom-left"></div>
+            </Link>
+            <Link to="/uplink" className="group relative border-4 border-neon bg-black hover:bg-neon/5 transition-all duration-300 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:scale-[1.02] shadow-[0_0_20px_rgba(57,255,20,0.2)]">
+                <Brain size={80} className="text-white mb-6 group-hover:text-neon group-hover:scale-110 transition-transform duration-300" />
+                <h2 className="text-4xl font-black uppercase z-10">NEURAL_UPLINK</h2>
+                <p className="text-gray-400 font-bold mt-2 z-10 group-hover:text-white">TEACH // LEARN // EVOLVE</p>
                 <div className="absolute inset-0 bg-neon/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 skew-y-12 origin-bottom-left"></div>
             </Link>
             <Link to="/coming-soon" className="group relative border-4 border-gray-600 bg-gray-900/50 hover:bg-gray-800 transition-all duration-300 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-white opacity-80 hover:opacity-100">

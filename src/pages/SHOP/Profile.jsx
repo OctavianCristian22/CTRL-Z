@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Settings, ShieldCheck, Save, Copy, ShieldAlert, Package, Clock, Truck, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Settings, ShieldCheck, Save, Copy, ShieldAlert, Package, Clock, Truck, CheckCircle, Smartphone } from 'lucide-react';
 import { doc, updateDoc, collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
-import { updateUserProfile, db } from '../firebase';
+import { updateUserProfile, db } from '../../firebase';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Heart, XCircle } from 'lucide-react';
-import { toggleWishlist } from '../firebase';
+import { toggleWishlist } from '../../firebase';
 
-export default function Profile({ user, userData, setUser, setUserData }) {
+export default function Profile({ user, userData, setUser, setUserData, setCart }) {
   const [editMode, setEditMode] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [tempPhone, setTempPhone] = useState('');
+  const [tempContact, setTempContact] = useState('');
   const [tempUsername, setTempUsername] = useState('');
   const [tempPin, setTempPin] = useState(''); 
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
@@ -20,6 +22,27 @@ export default function Profile({ user, userData, setUser, setUserData }) {
 
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    const success = searchParams.get('success');
+
+    if (success === 'true' && !toastShownRef.current) {
+        toastShownRef.current = true;
+
+      toast.success("Plată confirmată!", {
+        duration: 5000,
+        icon: '✅',
+        style: { border: '2px solid #39FF14' }
+      });
+
+      if (setCart) setCart([]);
+
+      if (user) localStorage.removeItem(`cart_${user.uid}`);
+
+      navigate('/profile', { replace: true });
+    }
+  }, [searchParams, navigate, setCart, user]);
 
   useEffect(() => {
       if(user) setTempUsername(user.displayName || '');
@@ -147,6 +170,10 @@ const removeFromWishlist = async (item) => {
                  <div className="mt-8 text-left space-y-4 border-t-2 border-black border-dashed pt-6">
                     <div><label className="text-xs font-bold text-gray-500 uppercase">Username / Callsign</label><input type="text" value={editMode ? tempUsername : (user?.displayName || '')} disabled={!editMode} onChange={(e) => setTempUsername(e.target.value)} className={`font-mono font-bold p-2 border-2 w-full ${editMode ? 'bg-white border-neon' : 'bg-gray-100 border-transparent'}`} /></div>
                     <div><label className="text-xs font-bold text-gray-500 uppercase">Phone Number</label><input type="text" value={editMode ? tempPhone : (userData?.phone || 'Not Set')} disabled={!editMode} onChange={(e) => setTempPhone(e.target.value)} className={`font-mono font-bold p-2 border-2 w-full ${editMode ? 'bg-white border-neon' : 'bg-gray-100 border-transparent'}`} /></div>
+                    <div>
+                        <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1"><Smartphone size={12}/> Secure Contact (Discord ID)</label>
+                        <input type="text" placeholder="ex: alex#1234 / 072..." value={editMode ? tempContact : (userData?.contactInfo || 'Not Set')} disabled={!editMode} onChange={(e) => setTempContact(e.target.value)} className={`font-mono font-bold p-2 border-2 w-full ${editMode ? 'bg-white border-neon' : 'bg-gray-100 border-transparent'}`} />
+                    </div>
                     <div><label className="text-xs font-bold text-gray-500 uppercase">Email (Locked)</label><div className="font-mono font-bold bg-gray-100 p-2 border-2 border-transparent text-gray-500">{user?.email}</div></div>
                  </div>
              </div>

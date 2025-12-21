@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, ShoppingBag, Lock, Home } from 'lucide-react';
+import { LayoutGrid, ShoppingBag, Lock, Home, Brain } from 'lucide-react';
 
 export default function PortalSidebar() {
     const location = useLocation();
@@ -10,6 +10,7 @@ export default function PortalSidebar() {
     const modules = [
         { name: 'CENTRAL HUB', path: '/', icon: <LayoutGrid size={24} />, color: 'text-white' },
         { name: 'CTRL-Z SHOP', path: '/store', icon: <ShoppingBag size={24} />, color: 'text-neon' },
+        { name: 'NEURAL_UPLINK', path: '/uplink', icon: <Brain size={24} />, color: 'text-neon' },
         { name: 'SECRET ROOM', path: '/coming-soon', icon: <Lock size={24} />, color: 'text-gray-500' },
     ];
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase'; 
+import { db } from '../../firebase'; 
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
-import { Package, Truck, CheckCircle, DollarSign, AlertTriangle, Plus, Trash2, Edit, Save, X, Layers, ShoppingBag, List, ChevronDown, ChevronUp, MapPin, CreditCard, User } from 'lucide-react';
+import { Package, Truck, CheckCircle, DollarSign, AlertTriangle, Plus, Trash2, Edit, X, Layers, ShoppingBag, List, ChevronDown, ChevronUp, MapPin, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,7 +17,7 @@ export default function Admin({ user, userData }) {
   const [isEditing, setIsEditing] = useState(null);
   
   const [formData, setFormData] = useState({
-    name: '', price: '', category: '', image: '', description: '', specs: []
+    name: '', price: '', category: 'gear', image: '', description: '', specs: [], stock: 10, images: ['']
   });
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function Admin({ user, userData }) {
       setStats({ total, count: data.length, pending });
     });
 
-    const qProducts = collection(db, "products");
+    const qProducts = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const unsubProducts = onSnapshot(qProducts, (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setProducts(data);
@@ -62,6 +62,7 @@ export default function Admin({ user, userData }) {
       }
   };
 
+  // --- SPECIFICATIONS LOGIC ---
   const addSpecField = () => setFormData({ ...formData, specs: [...formData.specs, { key: '', value: '' }] });
   const removeSpecField = (index) => setFormData({ ...formData, specs: formData.specs.filter((_, i) => i !== index) });
   const updateSpecField = (index, field, text) => {
@@ -70,28 +71,67 @@ export default function Admin({ user, userData }) {
       setFormData({ ...formData, specs: newSpecs });
   };
 
+  // --- IMAGES LOGIC ---
+  const addImageField = () => setFormData({ ...formData, images: [...formData.images, ''] });
+  const removeImageField = (index) => setFormData({ ...formData, images: formData.images.filter((_, i) => i !== index) });
+  const updateImageField = (index, value) => {
+    const newImages = [...formData.images];
+    newImages[index] = value;
+    setFormData({ ...formData, images: newImages });
+  };
+
   const handleProductSubmit = async (e) => {
       e.preventDefault();
       if(!formData.name || !formData.price) return toast.error("Date incomplete!");
       try {
-          const cleanSpecs = formData.specs.filter(s => s.key.trim() !== '' && s.value.trim() !== '');
-          const productData = { ...formData, price: Number(formData.price), specs: cleanSpecs, createdAt: new Date() };
+          const cleanImages = formData.images ? formData.images.filter(img => img.trim() !== '') : [];
+          const finalImages = cleanImages.length > 0 ? cleanImages : [];
+          
+          const cleanSpecs = formData.specs ? formData.specs.filter(s => s.key.trim() !== '' && s.value.trim() !== '') : [];
+          
+          const productData = { 
+            ...formData, 
+            price: Number(formData.price), 
+            stock: Number(formData.stock),
+            specs: cleanSpecs, 
+            images: finalImages, 
+            image: finalImages[0] || '', 
+            createdAt: new Date() 
+          };
           
           if(isEditing) {
-              await updateDoc(doc(db, "products", isEditing), productData);
+              const { createdAt, ...updateData } = productData;
+              await updateDoc(doc(db, "products", isEditing), updateData);
               toast.success("Produs actualizat!");
               setIsEditing(null);
           } else {
               await addDoc(collection(db, "products"), productData);
               toast.success("Produs adaugat!");
           }
-          setFormData({ name: '', price: '', category: '', image: '', description: '', specs: [] });
-      } catch (err) { toast.error("Eroare salvare."); }
+          setFormData({ name: '', price: '', category: 'gear', image: '', description: '', specs: [], stock: 10, images: [''] });
+      } catch (err) { toast.error("Eroare salvare."); console.error(err); }
   };
 
   const handleEditClick = (product) => {
       setIsEditing(product.id);
-      setFormData({ name: product.name, price: product.price, category: product.category || 'gear', image: product.image || '', description: product.description || '', specs: product.specs || [] });
+
+      let editImages = [''];
+      if (product.images && product.images.length > 0) {
+          editImages = product.images;
+      } else if (product.image) {
+          editImages = [product.image];
+      }
+
+      setFormData({ 
+          name: product.name, 
+          price: product.price, 
+          category: product.category || 'gear', 
+          image: product.image || '', 
+          description: product.description || '', 
+          specs: product.specs || [],
+          stock: product.stock !== undefined ? product.stock : 10,
+          images: editImages
+      });
       window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -110,7 +150,7 @@ export default function Admin({ user, userData }) {
       <div className="flex flex-col md:flex-row justify-between items-end border-b-4 border-neon pb-4 mb-8">
         <div>
             <h1 className="text-4xl md:text-6xl font-black text-neon tracking-tighter">COMMAND_CENTER</h1>
-            <p className="text-gray-500 mt-2">ADMIN PANEL V3.1 // <span className="text-white">FULL_CONTROL</span></p>
+            <p className="text-gray-500 mt-2">ADMIN PANEL V3.2 // <span className="text-white">FULL_CONTROL</span></p>
         </div>
         <div className="flex gap-2 mt-4 md:mt-0">
             <button onClick={() => setActiveTab('orders')} className={`px-4 py-2 font-bold flex items-center gap-2 border-2 ${activeTab === 'orders' ? 'bg-neon text-black border-neon' : 'bg-black text-gray-500 border-gray-800'}`}><Layers size={18} /> COMMANDS</button>
@@ -249,15 +289,50 @@ export default function Admin({ user, userData }) {
                 <form onSubmit={handleProductSubmit} className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                         <div><label className="text-xs font-bold text-gray-500 uppercase">Product Name</label><input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-black border-2 border-gray-700 p-3 text-white focus:border-neon focus:outline-none font-bold" /></div>
-                        <div className="grid grid-cols-2 gap-4">
+                        
+                        <div className="grid grid-cols-3 gap-4">
                             <div><label className="text-xs font-bold text-gray-500 uppercase">Price (RON)</label><input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full bg-black border-2 border-gray-700 p-3 text-white focus:border-neon focus:outline-none font-bold" /></div>
+                            
+                            {/* INPUT PENTRU STOC */}
+                            <div><label className="text-xs font-bold text-gray-500 uppercase">STOCK QTY</label><input type="number" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} className="w-full bg-gray-800 border-2 border-gray-700 p-3 text-white focus:border-neon focus:outline-none font-bold focus:bg-black" /></div>
+                            
                             <div><label className="text-xs font-bold text-gray-500 uppercase">Category</label><select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-black border-2 border-gray-700 p-3 text-white focus:border-neon focus:outline-none font-bold"><option value="gear">GEAR</option><option value="tech">TECH</option><option value="access">ACCESS</option></select></div>
                         </div>
-                        <div><label className="text-xs font-bold text-gray-500 uppercase">Image URL</label><input type="text" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="w-full bg-black border-2 border-gray-700 p-3 text-white focus:border-neon focus:outline-none font-bold text-xs" /></div>
 
+                        {/* SECTIUNEA DE IMAGINI MULTIPLE */}
                         <div className="bg-black border-2 border-gray-700 p-4">
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block flex items-center gap-2">
+                                    Product Gallery
+                                </label>                                    
+                            {formData.images?.map((img, index) => (
+                                <div key={index} className="flex gap-2 mb-2">
+                                    <input 
+                                        type="text" 
+                                        placeholder={`Image URL #${index + 1}`} 
+                                        value={img} 
+                                        onChange={(e) => updateImageField(index, e.target.value)} 
+                                        className="flex-1 bg-gray-900 border border-gray-600 p-2 text-xs text-white focus:border-neon focus:outline-none" 
+                                    />
+                                    {formData.images.length > 1 && (
+                                        <button type="button" onClick={() => removeImageField(index)} className="text-red-500 hover:text-white px-2">
+                                            <X size={16} />
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                            <button type="button" onClick={addImageField} className="w-full border border-gray-600 border-dashed text-gray-500 text-xs py-2 hover:border-neon hover:text-neon transition-colors">
+                                + ADD ANOTHER IMAGE
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="flex flex-col h-full">
+                        <label className="text-xs font-bold text-gray-500 uppercase">Description</label>
+                        <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-black border-2 border-gray-700 p-3 text-white focus:border-neon focus:outline-none font-bold flex-1 mb-4 text-sm" rows={5}></textarea>
+                        
+                        <div className="bg-black border-2 border-gray-700 p-4 mb-4">
                             <label className="text-xs font-bold text-gray-500 uppercase mb-2 block flex items-center gap-2"><List size={14}/> Tech Specs</label>
-                            {formData.specs.map((spec, index) => (
+                            {formData.specs?.map((spec, index) => (
                                 <div key={index} className="flex gap-2 mb-2">
                                     <input placeholder="Label" value={spec.key} onChange={(e) => updateSpecField(index, 'key', e.target.value)} className="w-1/3 bg-gray-900 border border-gray-600 p-2 text-xs text-white focus:border-neon focus:outline-none" />
                                     <input placeholder="Value" value={spec.value} onChange={(e) => updateSpecField(index, 'value', e.target.value)} className="flex-1 bg-gray-900 border border-gray-600 p-2 text-xs text-white focus:border-neon focus:outline-none" />
@@ -266,14 +341,9 @@ export default function Admin({ user, userData }) {
                             ))}
                             <button type="button" onClick={addSpecField} className="w-full border border-gray-600 border-dashed text-gray-500 text-xs py-2 hover:border-neon hover:text-neon transition-colors">+ ADD SPEC ROW</button>
                         </div>
-                    </div>
-                    
-                    <div className="flex flex-col h-full">
-                        <label className="text-xs font-bold text-gray-500 uppercase">Description</label>
-                        <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-black border-2 border-gray-700 p-3 text-white focus:border-neon focus:outline-none font-bold flex-1 mb-4 text-sm" rows={5}></textarea>
-                        
-                        <div className="flex gap-4">
-                            {isEditing && <button type="button" onClick={() => {setIsEditing(null); setFormData({ name: '', price: '', category: '', image: '', description: '', specs: [] });}} className="flex-1 bg-gray-700 text-white font-black py-3 hover:bg-white hover:text-black uppercase">CANCEL</button>}
+
+                        <div className="flex gap-4 mt-auto">
+                            {isEditing && <button type="button" onClick={() => {setIsEditing(null); setFormData({ name: '', price: '', category: 'gear', image: '', description: '', specs: [], stock: 10, images: [''] });}} className="flex-1 bg-gray-700 text-white font-black py-3 hover:bg-white hover:text-black uppercase">CANCEL</button>}
                             <button type="submit" className={`flex-[2] font-black py-3 uppercase shadow-brutal ${isEditing ? 'bg-yellow-500 text-black' : 'bg-neon text-black'}`}>{isEditing ? 'SAVE CHANGES' : 'DEPLOY ITEM'}</button>
                         </div>
                     </div>
@@ -284,7 +354,15 @@ export default function Admin({ user, userData }) {
                 {products.map(prod => (
                     <div key={prod.id} className="bg-black border-2 border-gray-800 p-4 group hover:border-white transition-all">
                         <div className="flex justify-between items-start mb-2"><h4 className="font-bold text-lg leading-tight">{prod.name}</h4><span className="text-neon font-black">{prod.price} RON</span></div>
-                        <div className="flex gap-2 mt-4 pt-4 border-t border-gray-800 opacity-50 group-hover:opacity-100 transition-opacity">
+                        
+                        {/* Afisare Stoc pe card */}
+                        <div className="text-xs font-bold text-gray-400 mb-4 flex items-center gap-2">
+                             <Package size={14}/> STOC: {prod.stock !== undefined ? prod.stock : 'N/A'}
+                             {/* Indicator Low Stock */}
+                             {prod.stock < 5 && <span className="text-red-500 flex items-center gap-1 border border-red-500 px-1"><AlertTriangle size={10}/> LOW</span>}
+                        </div>
+
+                        <div className="flex gap-2 pt-4 border-t border-gray-800 opacity-50 group-hover:opacity-100 transition-opacity">
                             <button onClick={() => handleEditClick(prod)} className="flex-1 bg-gray-800 hover:bg-yellow-500 hover:text-black text-white py-2 text-xs font-bold uppercase"><Edit size={14} className="mx-auto" /></button>
                             <button onClick={() => handleDeleteClick(prod.id)} className="flex-1 bg-gray-800 hover:bg-red-600 text-white py-2 text-xs font-bold uppercase"><Trash2 size={14} className="mx-auto" /></button>
                         </div>

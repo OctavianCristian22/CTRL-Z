@@ -5,6 +5,14 @@
 body {
   background-color: #f0f0f0;
   color: #0c0c0c;
+  transition: filter 0.5s ease;
+}
+
+.hacked-mode {
+  filter: hue-rotate(280deg) contrast(1.2);
+}
+.hacked-mode .bg-black {
+  background-color: #1a0000;
 }
 
 .bg-noise {

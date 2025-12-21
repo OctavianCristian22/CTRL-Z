@@ -38,6 +38,7 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 
+// --- ORDERS & SHOP ---
 export const createOrder = async (userId, orderData) => {
     const docRef = await addDoc(collection(db, "orders"), {
         userId,
@@ -48,6 +49,7 @@ export const createOrder = async (userId, orderData) => {
     return docRef.id;
 };
 
+// --- USERNAME SYSTEM ---
 export const checkUsernameAvailability = async (username) => {
   const usernameRef = doc(db, "usernames", username.toLowerCase());
   const snap = await getDoc(usernameRef);
@@ -58,6 +60,7 @@ export const reserveUsername = async (username, uid) => {
   await setDoc(doc(db, "usernames", username.toLowerCase()), { uid });
 };
 
+// --- AUTH ---
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
@@ -107,6 +110,7 @@ export const getUserDocument = async (uid) => {
   }
 };
 
+// --- REVIEWS (SHOP) ---
 export const addReview = async (productId, reviewData) => {
     const safeId = String(productId);
     const docRef = await addDoc(collection(db, "reviews"), {
@@ -145,6 +149,7 @@ export const updateReview = async (reviewId, newComment, newRating) => {
     });
 };
 
+// --- WISHLIST ---
 export const toggleWishlist = async (userId, product) => {
   if (!userId) throw new Error("User not logged in");
   
@@ -168,6 +173,15 @@ export const checkInWishlist = async (userId, productId) => {
   if (!userId) return false;
   const docSnap = await getDoc(doc(db, "users", userId, "wishlist", productId));
   return docSnap.exists();
+};
+
+// --- REPORT SYSTEM (NEW) ---
+export const submitReport = async (reportData) => {
+    await addDoc(collection(db, "reports"), {
+        ...reportData,
+        status: 'pending',
+        createdAt: new Date()
+    });
 };
 
 export const updateUserProfile = (user, username) => updateProfile(user, { displayName: username });

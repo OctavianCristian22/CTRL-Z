@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, CreditCard, MapPin, Truck, ShieldCheck, Lock } from 'lucide-react';
-import { db } from '../firebase';
+import { db } from '../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
@@ -44,18 +44,18 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
   };
 
   const handlePlaceOrder = async (e) => {
-    e.preventDefault();
-    if (!user) return toast.error("Trebuie să fii logat!");
+    if (e) e.preventDefault();
 
-    if (!shipping.address || !shipping.city || !shipping.phone) return toast.error("Completează adresa de livrare!");
-    if (card.number.length < 16 || !card.cvc || !card.expiry) return toast.error("Datele cardului sunt incomplete!");
+    if (!user) return toast.error("Trebuie să fii logat!");
+    
+    if (!shipping.address || !shipping.city || !shipping.phone) {
+        return toast.error("Completează adresa de livrare!");
+    }
 
     setLoading(true);
-    const toastId = toast.loading("Processing Secure Payment...");
+    const toastId = toast.loading("Inițializare Stripe Secure Checkout...");
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
       const orderData = {
         userId: user.uid,
         userEmail: user.email,
@@ -74,22 +74,37 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
         shippingCost: shippingCost,
         total: total,
         
-        status: 'processing',
-        paymentMethod: 'card_stripe_simulated',
-        isPaid: true,
+        status: 'pending_payment',
+        paymentMethod: 'stripe',
+        isPaid: false,
         createdAt: serverTimestamp()
       };
 
-      await addDoc(collection(db, "orders"), orderData);
+      const docRef = await addDoc(collection(db, "orders"), orderData);
 
-      toast.success("PAYMENT SUCCESSFUL!", { id: toastId });
-      setCart([]);
-      navigate('/profile');
+const response = await fetch('https://createstripecheckout-rjtaqw7mdq-uc.a.run.app', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ 
+      items: cart,
+      email: user.email,
+      orderId: docRef.id
+  }),
+});
+
+      const data = await response.json();
+
+      if (data.url) {
+        toast.success("Redirecting to Stripe...", { id: toastId });
+        window.location.href = data.url;
+      } else {
+        console.error("Stripe Error:", data);
+        throw new Error("Nu am primit URL de la Stripe. Verifica consola.");
+      }
 
     } catch (error) {
-      console.error(error);
-      toast.error("Transaction Failed.", { id: toastId });
-    } finally {
+      console.error("Eroare Checkout:", error);
+      toast.error("Eroare la conectarea cu Stripe.", { id: toastId });
       setLoading(false);
     }
   };
@@ -136,44 +151,7 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
                         </div>
                     </form>
                 </div>
-                <div className="bg-black text-white border-4 border-neon p-6 shadow-[8px_8px_0_0_#39FF14]">
-                    <h2 className="text-2xl font-black uppercase mb-6 flex items-center gap-2 text-neon">
-                        <CreditCard /> PAYMENT METHOD
-                    </h2>
-                    <div className="mb-6 p-4 border-2 border-gray-700 bg-gray-900 rounded-lg max-w-sm mx-auto md:mx-0 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-20"><CreditCard size={100} /></div>
-                        <div className="relative z-10">
-                            <p className="text-xs text-gray-400 uppercase mb-2">Card Number</p>
-                            <p className="font-mono text-xl tracking-widest mb-4">{card.number || '•••• •••• •••• ••••'}</p>
-                            <div className="flex gap-8">
-                                <div><p className="text-[10px] text-gray-400 uppercase">Expiry</p><p className="font-mono">{card.expiry || 'MM/YY'}</p></div>
-                                <div><p className="text-[10px] text-gray-400 uppercase">CVC</p><p className="font-mono">{card.cvc || '•••'}</p></div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div className="grid gap-4">
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase">Card Number</label>
-                            <div className="relative">
-                                <input type="text" name="number" maxLength="16" value={card.number} onChange={handleCardChange} className="w-full bg-gray-900 border-2 border-gray-600 p-3 text-white focus:border-neon focus:outline-none font-mono pl-10" placeholder="0000 0000 0000 0000" />
-                                <CreditCard className="absolute left-3 top-3.5 text-gray-500" size={18} />
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase">Expiry Date</label>
-                                <input type="text" name="expiry" maxLength="5" value={card.expiry} onChange={handleCardChange} className="w-full bg-gray-900 border-2 border-gray-600 p-3 text-white focus:border-neon focus:outline-none font-mono" placeholder="MM/YY" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase">CVC / CWW</label>
-                                <div className="relative">
-                                    <input type="text" name="cvc" maxLength="3" value={card.cvc} onChange={handleCardChange} className="w-full bg-gray-900 border-2 border-gray-600 p-3 text-white focus:border-neon focus:outline-none font-mono" placeholder="123" />
-                                    <Lock className="absolute right-3 top-3.5 text-gray-500" size={16} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     
                     <div className="mt-6 flex items-center gap-2 text-xs text-gray-400">
                         <ShieldCheck size={14} className="text-neon" />
@@ -230,6 +208,5 @@ export default function CheckoutPage({ cart, setCart, user, userData }) {
 
         </div>
       </div>
-    </div>
   );
 }
