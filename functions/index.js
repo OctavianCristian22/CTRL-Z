@@ -78,7 +78,7 @@ exports.createStripeCheckout = functions.https.onRequest(async (req, res) => {
 });
 
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
-  const endpointSecret = "whsec_90rvfOawPARgJb6MALwYUS92LPCdcd3M";
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
   const sig = req.headers["stripe-signature"];
 
   // --- RAW BODY FIX ---
