@@ -3,7 +3,7 @@ import { Package, Truck, ShieldCheck, Cpu, Terminal, Crosshair } from 'lucide-re
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-[#f0f0f0] font-mono pt-10 pb-20 px-4">
+    <div className="min-h-screen bg-[#9f9f9f] font-mono pt-10 pb-20 px-4">
       <div className="max-w-5xl mx-auto">
         
         <div className="border-l-8 border-black pl-6 mb-16 animate-in slide-in-from-left-4 duration-500">

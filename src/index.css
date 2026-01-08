@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  background-color: #f0f0f0;
+  background-color: #99a099;
   color: #0c0c0c;
   transition: filter 0.5s ease;
 }
@@ -33,11 +33,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #39FF14;
+  background: #e1e4e1;
 }
 
 ::selection {
-  background: #39FF14;
+  background: #e1e4e1;
   color: #000000;
 }
 

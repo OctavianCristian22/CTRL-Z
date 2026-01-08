@@ -58,7 +58,7 @@ export default function Shop({ addToCart, user, setCart }) {
   }));
 
   return (
-    <div className="min-h-screen bg-concrete p-4 md:p-8 pt-24 pb-20 bg-[#f0f0f0]">
+    <div className="min-h-screen bg-concrete p-4 md:p-8 pt-24 pb-20 bg-[#9f9f9f]">
       
       <div className="max-w-7xl mx-auto mb-12 animate-in fade-in slide-in-from-bottom-4">
         <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4">

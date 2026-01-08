@@ -68,11 +68,8 @@ export default function App() {
   const navigate = useNavigate();
 
   const isImmersive = 
-      location.pathname === '/' || 
-      location.pathname === '/hub' || 
-      location.pathname.startsWith('/hub/') ||
-      location.pathname === '/coming-soon';
-  const isUplink = location.pathname.startsWith('/uplink');
+      location.pathname === '/' || location.pathname === '/hub' || location.pathname.startsWith('/hub/') ||location.pathname === '/coming-soon';
+      const isUplink = location.pathname.startsWith('/uplink');
 
   // --- GLOBAL KEY LISTENER ---
   useEffect(() => {
@@ -293,7 +290,7 @@ useEffect(() => {
   if (authLoading) return <div className="min-h-screen bg-black flex items-center justify-center text-white font-mono"><h1 className="text-2xl animate-pulse">INITIALIZING SYSTEM...</h1></div>;
 
   return (
-    <div className={`min-h-screen font-mono relative overflow-x-hidden ${isImmersive ? 'bg-black p-0' : 'bg-concrete p-0 md:p-8 md:pt-0 bg-noise'}`}>
+    <div className={`min-h-screen font-mono relative overflow-x-hidden ${isImmersive ? 'bg-black p-0' : 'bg-[#9f9f9f] p-0 md:p-8 md:pt-0 bg-noise'}`}>
       <Toaster position="bottom-right" toastOptions={{ className: '', style: { border: '2px solid #000', borderRadius: '0px', background: '#000000', color: '#39FF14', fontFamily: 'monospace', fontWeight: 'bold', padding: '16px', boxShadow: '8px 8px 0px 0px rgba(57, 255, 20, 0.3)', }, success: { iconTheme: { primary: '#39FF14', secondary: 'black' }, style: { border: '2px solid #39FF14' } }, error: { iconTheme: { primary: '#ff0000', secondary: 'black' }, style: { border: '2px solid #ff0000', color: '#ff0000' } }, loading: { style: { border: '2px solid #ffff00', color: '#ffff00' } } }} />
       <ScrollToTop />
       <CommandPalette />
@@ -306,7 +303,7 @@ useEffect(() => {
       {/* NAVBAR LOGIC */}
       {isUplink && <UplinkNavbar user={user} openLoginModal={() => setShowLoginModal(true)} />}
       {!isImmersive && !isUplink && (
-        <nav className="flex flex-col md:flex-row justify-between items-center mb-16 border-b-4 border-black pb-6 sticky top-0 bg-[#f0f0f0] z-50 p-4 md:pt-4 md:ml-16 transition-all">
+        <nav className="flex flex-col md:flex-row justify-between items-center mb-16 border-b-4 border-black pb-6 sticky top-0 bg-[#9f9f9f] z-50 p-4 md:pt-4 md:ml-16 transition-all">
           <Link to="/hub" className="flex items-center gap-2 group cursor-pointer mb-4 md:mb-0"><div className="bg-black text-neon p-2 px-4 font-black text-2xl md:text-3xl border-2 border-black shadow-brutal tracking-tighter group-hover:bg-neon group-hover:text-black transition-all">[ CTRL ] - [ Z ]</div></Link>
           <div className="flex items-center gap-2 md:gap-6 text-sm md:text-base font-bold">
             <Link to="/store" className={`hover:text-neon hover:bg-black px-2 py-1 transition-all ${location.pathname === '/store' ? 'bg-black text-white' : ''}`}>HOME</Link>

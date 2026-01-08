@@ -192,11 +192,7 @@ const removeFromWishlist = async (item) => {
             <div className="bg-white border-4 border-black p-6 shadow-brutal relative h-full flex flex-col justify-between">
                 <div>
                      <div className="flex items-center gap-2 mb-6 border-b-4 border-black pb-2"><Settings className="text-black" /><h3 className="text-2xl font-black uppercase">CONFIGURATION</h3></div>
-                     <div className={`p-4 border-2 ${is2FAEnabled ? 'border-neon bg-black text-neon' : 'border-gray-300 bg-gray-50'}`}>
-                        <div className="flex items-center justify-between mb-2"><span className="font-bold flex items-center gap-2"><ShieldCheck size={20} /> 2-FACTOR AUTH (PIN)</span>{editMode && (<button onClick={() => setIs2FAEnabled(!is2FAEnabled)} className={`px-3 py-1 font-bold text-xs border-2 ${is2FAEnabled ? 'bg-neon text-black border-neon' : 'bg-gray-200 text-gray-500 border-gray-400'}`}>{is2FAEnabled ? 'ENABLED' : 'DISABLED'}</button>)}</div>
-                        <p className={`text-xs mb-4 ${is2FAEnabled ? 'text-gray-300' : 'text-gray-500'}`}>{is2FAEnabled ? "Contul este protejat. Se cere PIN la logare." : "Contul este vulnerabil. Activează protecția."}</p>
-                        {is2FAEnabled && (<div className="mt-2"><label className="text-xs font-bold uppercase block mb-1">SECURITY PIN (4 digits)</label><input type="text" maxLength={6} placeholder="Set PIN..." value={tempPin} disabled={!editMode} onChange={(e) => setTempPin(e.target.value.replace(/\D/g,''))} className="w-full bg-white text-black p-2 font-bold border-2 border-neon focus:outline-none" /></div>)}
-                     </div>
+                     
                 </div>
                 <div className="flex justify-end gap-3 mt-8 pt-4 border-t-2 border-gray-200 border-dashed">
                     {editMode ? (<><button onClick={() => setEditMode(false)} className="px-6 py-3 font-bold hover:bg-gray-200 border-2 border-transparent">CANCEL</button><button onClick={saveProfileChanges} className="bg-neon text-black px-6 py-3 font-bold border-2 border-black hover:shadow-brutal flex items-center gap-2"><Save size={18} /> SAVE ALL</button></>) : (<button onClick={() => setEditMode(true)} className="w-full bg-black text-white px-6 py-4 font-bold hover:bg-neon hover:text-black border-2 border-transparent hover:border-black transition-all text-xl uppercase">UNLOCK EDIT MODE</button>)}

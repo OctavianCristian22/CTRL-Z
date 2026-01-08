@@ -23,6 +23,8 @@ import {
   getDocs,
   orderBy
 } from "firebase/firestore";
+// 1. IMPORTĂ ASTA:
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check"; 
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -34,6 +36,21 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+// 2. INITIALIZEAZĂ APP CHECK:
+// Verificăm dacă suntem în browser (nu pe server/build)
+if (typeof window !== "undefined") {
+  // Activează debug token pentru localhost ca să nu ai erori în teste
+  window.self.FIREBASE_APPCHECK_DEBUG_TOKEN = true; 
+  
+  initializeAppCheck(app, {
+    // AICI PUI CHEIA COPIATĂ DIN GOOGLE CLOUD:
+    provider: new ReCaptchaEnterpriseProvider('6Lc...'), // Replace '6Lc...' with your actual key ID
+    
+    isTokenAutoRefreshEnabled: true 
+  });
+}
+
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);

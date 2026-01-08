@@ -31,7 +31,7 @@ export default function UplinkNavbar({ user, openLoginModal }) {
   };
 
   return (
-    <nav className="flex flex-col md:flex-row justify-between items-center mb-16 border-b-4 border-black pb-6 sticky top-0 bg-[#f0f0f0] z-50 p-4 md:pt-4 md:ml-16 transition-all">
+    <nav className="flex flex-col md:flex-row justify-between items-center mb-16 border-b-4 border-black pb-6 sticky top-0 bg-[#9f9f9f] z-50 p-4 md:pt-4 md:ml-16 transition-all">
       
       <Link to="/uplink" className="flex items-center gap-2 group cursor-pointer mb-4 md:mb-0">
         <div className="bg-black text-white p-2 px-4 font-black text-2xl md:text-3xl border-2 border-black shadow-brutal tracking-tighter group-hover:bg-white group-hover:text-black transition-all flex items-center gap-2">
